@@ -1,0 +1,11 @@
+{
+    "name": "dammy/string-analizer",
+    "description": "a program that analizes strings",
+    "authors": [
+        {
+            "name": "dharmy05",
+            "email": "dharmy.dev05@gmail.com"
+        }
+    ],
+    "require": {}
+}
