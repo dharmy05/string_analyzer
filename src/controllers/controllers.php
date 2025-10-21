@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/../services/stringServices.php';
+require_once __DIR__ . '/../config/database.php';
 function handleCreateString($conn){
+    // echo 'hello';
     // Read the raw jSON from the request body
     $input = file_get_contents('php://input');
     $data = json_decode($input, true);
@@ -29,14 +31,15 @@ function handleCreateString($conn){
     if($stmt->fetch()){
         http_response_code(409);
         echo json_encode(['error' => 'String already exists']);
+        exit;
     }
 
     // SAVE TO DB
     $now = gmdate('Y-m-d\TH:i:s\Z');
     $stmt = $conn->prepare("INSERT INTO strings (id, value, length, is_palindrome, 
-    unique_characters, word_count, sha256_hash, character_frequencies_map, created_at)
+    unique_characters, word_count, sha256_hash, character_frequency_map, created_at)
     VALUES (:id, :value, :length, :is_palindrome, :unique_characters, :word_count, :sha256_hash,
-     :character_frequencies_map, :created_at)");
+     :character_frequency_map, :created_at)");
 
     $stmt->execute([
         ':id' => $id,
@@ -46,7 +49,7 @@ function handleCreateString($conn){
         ':unique_characters' => $props['unique_characters'],
         ':word_count' => $props['word_count'],
         ':sha256_hash' => $props['sha256_hash'],
-        ':character_frequencies_map' => json_encode($props['character_frequencies_map']),
+        ':character_frequency_map' => json_encode($props['character_frequency_map'], JSON_UNESCAPED_UNICODE),
         ':created_at' => $now
     ]);
 
@@ -74,8 +77,8 @@ if(!$row){
     echo json_encode(['error' => 'String not found']);
     exit;
 }
-// format character_frequencies_map back to associative array
-$row['character_frequencies_map'] = json_decode($row['character_frequencies_map'], true);
+// format character_frequency_map back to associative array
+$row['character_frequency_map'] = json_decode($row['character_frequency_map'], true);
 
 // send response
 echo json_encode([
@@ -87,7 +90,7 @@ echo json_encode([
         'unique_characters' => (int)$row['unique_characters'],
         'word_count' => (int)$row['word_count'],
         'sha256_hash' => $row['sha256_hash'],
-        'character_frequencies_map' => $row['character_frequencies_map']
+        'character_frequency_map' => $row['character_frequency_map']
     ],
     'created_at' => $row['created_at']
 ], JSON_PRETTY_PRINT);
@@ -125,7 +128,7 @@ function handleGetAllStrings($conn){
         $query .= " AND word_count = :word_count";
         $params[':word_count'] = $filters['word_count'];
     }
-    if(isset($GET_['contains_character'])){
+    if(isset($_GET['contains_character'])){
         $char = $_GET['contains_character'];
         if(mb_strlen($char) !== 1){
             http_response_code(400);
@@ -140,7 +143,7 @@ function handleGetAllStrings($conn){
     $stmt->execute($params);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    $date = [];
+    $data = [];
     foreach($rows as $row){
         $data[] = [
             'id' => $row['id'],
@@ -151,7 +154,7 @@ function handleGetAllStrings($conn){
                 'unique_characters' => (int)$row['unique_characters'],
                 'word_count' => (int)$row['word_count'],
                 'sha256_hash' => $row['sha256_hash'],
-                'character_frequencies_map' => json_decode($row['character_frequencies_map'], true)
+                'character_frequency_map' => json_decode($row['character_frequency_map'], true)
             ],
             'created_at' => $row['created_at']
         ];
@@ -167,7 +170,7 @@ function handleDeleteString($conn, $value){
     // Compute the SHA-256 hash of the string to use as ID
     $id = hash('sha256', $value);
 
-    //checl if string exists
+    //checkif string exists
     $stmt = $conn->prepare("SELECT * FROM strings WHERE id = :id");
     $stmt->execute([':id' => $id]);
     if(!$stmt->fetch()){

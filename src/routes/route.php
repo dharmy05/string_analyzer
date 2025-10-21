@@ -1,5 +1,8 @@
 <?php 
 require_once __DIR__ . '/../controllers/controllers.php';
+require_once __DIR__ . '/../config/database.php';
+// require_once __DIR__ . '/../config/database.php';
+
 //  routing based on request method
 $method = $_SERVER['REQUEST_METHOD'];
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);

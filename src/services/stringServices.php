@@ -27,6 +27,6 @@ function analyzeString($value){
         'unique_characters' => $uniqueCharacters,
         'word_count' => $wordCount,
         'sha256_hash' => $hash,
-        'character_frequencies_map' => $freq
+        'character_frequency_map' => $freq
     ];
 }
