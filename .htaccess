@@ -1,7 +1,9 @@
 RewriteEngine On
+RewriteBase /
 
-# If the request is not a real file or directory,
-# send it to index.php for routing.
+# If the file or folder exists, don’t rewrite
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ index.php [QSA,L]
+
+# Send everything to index.php
+RewriteRule ^ index.php [QSA,L]
