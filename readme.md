@@ -1,152 +1,92 @@
-📘 String Analyzer API
+String Analyzer API
 
-A simple RESTful API that analyzes strings and stores their properties in a SQLite database.
-It can check if a string is a palindrome, count unique characters, generate SHA-256 hashes, calculate word count, store character frequency, and more.
+A simple PHP-based API that analyzes strings, saves them to a SQLite database, and allows retrieval, filtering, and deletion.
 
-🚀 Features
-
-✅ Analyze string properties:
-
-Length
-
-Palindrome check
-
-Unique characters
-
-Word count
-
-Character frequency map
-
-SHA-256 hash
-
-✅ Store analyzed strings in a database
-
-✅ Prevent duplicate string entries
-
-✅ Filter strings (query params & natural language)
-
-✅ Retrieve, delete, and list strings
-
-✅ Built using PHP + SQLite (PDO)
-
-📂 Project Structure
-project/
-├── config/
-│   └── database.php          # Database connection using PDO SQLite
-├── src/
-│   ├── controllers/          # Request handlers (create, get, delete, filter)
-│   └── services/stringServices.php  # Logic for analyzing strings
-├── database/ (optional)
-│   └── strings.db            # SQLite database file (not tracked on GitHub)
-├── index.php                 # Route entry point
-└── README.md                 # You are here
+✅ Project Setup
+📁 Folder Structure
+/ (public_html or project root)
+│── index.php                 → Main entry point (routing + controllers in one file)
+│── .htaccess                 → Enables clean URL routing
+│── /src
+│     └── /config
+│            └── database.php → Handles SQLite database connection & table creation
+│── /data
+│     └── strings.sqlite      → Auto-created database file
 
 ⚙️ Requirements
 
-PHP 8+
+PHP 8.0+
 
-SQLite (bundled in PHP)
+PDO SQLite extension enabled
 
-XAMPP, WAMP, Laragon, or any PHP server
+Apache server with .htaccess rewrite support (for Pxxl, 000webhost, InfinityFree, CPanel, etc.)
 
-Postman / cURL for API testing
+🚀 Installation & Running Locally
+
+Clone the repository
+
+git clone <your-repo-url>
+cd your-project-folder
 
 
-🛠️ Setup & Run Locally
+Start PHP’s development server
 
-1. Clone the repo
-git clone <your-repository-url>
-cd project
-
-2. Ensure database exists
-
-If strings.db is not included, create it automatically by running the app OR manually using SQLite:
-
-CREATE TABLE IF NOT EXISTS strings (
-    id TEXT PRIMARY KEY,
-    value TEXT NOT NULL,
-    length INTEGER,
-    is_palindrome INTEGER,
-    unique_characters INTEGER,
-    word_count INTEGER,
-    sha256_hash TEXT,
-    character_frequency_map TEXT,
-    created_at TEXT
-);
-
-3. Start PHP server
 php -S localhost:8000
 
 
-Or, if using XAMPP, place project inside htdocs and visit:
+Access API
 
-http://localhost/your-project-folder
+POST    http://localhost:8000/strings
+GET     http://localhost:8000/strings
+GET     http://localhost:8000/strings/{value}
+DELETE  http://localhost:8000/strings/{value}
+GET     http://localhost:8000/strings/filter-by-natural-language?query=palindrome
 
-📡 API Endpoints
+📂 Important File: .htaccess
+
+This file must be in the root or public_html folder:
+
+Options +FollowSymLinks
+RewriteEngine On
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+
+✔ This ensures all requests like /strings, /strings/hello, /strings/filter-by-natural-language go to index.php and don’t return 404.
+
+🗄️ Database Setup
+
+No manual setup required.
+
+SQLite database file: /data/strings.sqlite
+
+Automatically created if missing
+
+Handled by src/config/database.php
+
+You should commit the /data folder if you want to keep sample data in the repo.
+
+✅ Endpoints
 Method	Endpoint	Description
-POST	/string	Analyze and store a new string
-GET	/string/{value}	Retrieve analyzed string by value
-GET	/strings	Get all stored strings (supports filters)
-DELETE	/string/{value}	Delete a string by its SHA-256 hash
-GET	/strings/natural?query=...	Filter using natural language (e.g. "palindromes longer than 5")
-✅ Example Requests
-➤ POST /string
+POST	/strings	Create & analyze a string
+GET	/strings	Get all saved strings
+GET	/strings/{value}	Retrieve a single string
+GET	/strings/filter-by-natural-language?query=	Natural language filtering
+DELETE	/strings/{value}	Delete a string from database
+Sample Request: Create a String
+POST /strings
+Content-Type: application/json
+
 {
   "value": "racecar"
 }
 
+🌐 Deploying to Hosting (Pxxl, CPanel, 000webhost, etc.)
 
-Response:
-
-{
-  "id": "c8d...hash",
-  "value": "racecar",
-  "properties": {
-    "length": 7,
-    "is_palindrome": true,
-    "unique_characters": 5,
-    "word_count": 1,
-    "sha256_hash": "c8d..."
-  },
-  "created_at": "2025-01-01T00:00:00Z"
-}
-
-➤ DELETE /string/racecar
-curl -X DELETE http://localhost:8000/string/racecar
-
-
-Response:
-
-204 No Content
-
-🌐 Deployment Notes
-
-The database.db file is usually not pushed to GitHub.
-
-On the server:
-
-Create the database file manually or auto-generate on first request.
-
-Ensure write permissions (chmod 666 database.db on Linux or proper folder permissions on Windows/XAMPP).
-
-Update database.php to use the correct path:
-
-$dbPath = __DIR__ . '/../database/strings.db';
-$conn = new PDO("sqlite:$dbPath");
-
-✅ Future Improvements
-
-✅ Add migrations to auto-create tables
-
-✅ Use environment variables for DB path
-
-🚀 Add unit tests
-
-🚀 Add Docker support
-
-🚀 Add authentication (API keys / JWT)
-
-
-👨‍💻 Author
-Oluwadamilola olaleye
-Feel free to fork, improve, and contribute ❤️
+✔ Upload all files to public_html/
+✔ Ensure .htaccess is in the root (not inside /src)
+✔ PHP version must be 8.0+
+✔ SQLite is stored in /data/strings.sqlite (auto-created)

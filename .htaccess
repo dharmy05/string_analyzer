@@ -1,9 +1,9 @@
+Options +FollowSymLinks
 RewriteEngine On
-RewriteBase /
 
-# If the file or folder exists, don’t rewrite
+# If the request is for an existing file or folder, do not route
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 
-# Send everything to index.php
-RewriteRule ^ index.php [QSA,L]
+# Otherwise, send to index.php
+RewriteRule ^(.*)$ index.php [QSA,L]
