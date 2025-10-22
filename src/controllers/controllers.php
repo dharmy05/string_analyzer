@@ -166,15 +166,43 @@ function handleGetAllStrings($conn){
     ], JSON_PRETTY_PRINT);
 }
 
-function handleDeleteString($conn, $value){
-    // Compute the SHA-256 hash of the string to use as ID
+// function handleDeleteString($conn, $value){
+//     // Compute the SHA-256 hash of the string to use as ID
+//     $id = hash('sha256', $value);
+
+//     //checkif string exists
+//     $stmt = $conn->prepare("SELECT * FROM strings WHERE id = :id");
+//     $stmt->execute([':id' => $id]);
+//     if(!$stmt->fetch()){
+//         http_response_code(404);
+//         echo json_encode(['error' => 'String not found']);
+//         exit;
+//     }
+
+//     // Delete the string from the database
+//     $stmt = $conn->prepare("DELETE FROM strings WHERE id = :id");
+//     $stmt->execute([':id' => $id]);
+
+//     http_response_code(204);
+//     exit;
+    
+// }
+function handleDeleteString($conn, $value) {
+    if (!$value || !is_string($value)) {
+        http_response_code(400); // Bad Request
+        echo json_encode(['error' => 'Invalid or missing string value']);
+        exit;
+    }
+
+    // Compute the SHA-256 hash of the string
     $id = hash('sha256', $value);
 
-    //checkif string exists
-    $stmt = $conn->prepare("SELECT * FROM strings WHERE id = :id");
+    // Check if the string exists
+    $stmt = $conn->prepare("SELECT 1 FROM strings WHERE id = :id");
     $stmt->execute([':id' => $id]);
-    if(!$stmt->fetch()){
-        http_response_code(404);
+
+    if (!$stmt->fetch()) {
+        http_response_code(404); // Not Found
         echo json_encode(['error' => 'String not found']);
         exit;
     }
@@ -183,10 +211,11 @@ function handleDeleteString($conn, $value){
     $stmt = $conn->prepare("DELETE FROM strings WHERE id = :id");
     $stmt->execute([':id' => $id]);
 
+    // 204 = No Content (don't send a body)
     http_response_code(204);
     exit;
-    
 }
+
 
 
 function handleNaturalLanguageFilter($conn) {
